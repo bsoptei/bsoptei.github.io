@@ -1,0 +1,74 @@
+* {
+  font-family: 'Kelly Slab', cursive;
+}
+
+.center {
+  text-align: center;
+}
+
+main {
+  margin: 0 200px;
+}
+
+h1 {
+  font-size: 60px;
+}
+
+h2 {
+  font-size: 42px;
+}
+
+h3 {
+  font-size: 36px;
+}
+
+p {
+  font-size: 28px;
+}
+
+.link {
+  color: darkgreen;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+span {
+  font-weight: bold;
+}
+
+.red {
+  color: red;
+}
+
+.green {
+  color: green;
+}
+
+.blue {
+  color: blue;
+}
+
+.magenta {
+  color: magenta;
+}
+
+.grey {
+  color: grey;
+}
+
+.block {
+  padding: 10px;
+}
+
+.code {
+  background: lightblue;
+}
+
+.interpreter {
+  background: black;
+  color: white;
+}
+
+.docs {
+  background: lightgray;
+}

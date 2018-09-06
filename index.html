@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calculating Infinity</title>
+  <link href="https://fonts.googleapis.com/css?family=Kelly+Slab" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+<body>
+  <header class="std_global">
+      <h1 class="center">Calculating Infinity</h1>
+      <h2 class="center"><a class="link" href="https://github.com/bsoptei" target="_blank">@bsoptei</a>'s adventures in programming</h2>
+  </header>
+  <main class="std_global">
+    <article class="std_global">
+      <time datetime="2018-09-06">2018. 09. 06.</time>
+      <h3>A functional hello to R</h3>
+      <p>I study R because I am looking for an effective data analysis tool. I am a post-hello-world R student interested in functional programming (FP). You might have heard about, or learning, or already mastered FP. If you are interested in a brief summary on the concept, you can find one <a class="link" href="https://medium.com/@emadalam/fp-rp-frp-what-the-f-71c4949c29d" target="_blank">here</a> or <a class="link" href="https://snipcart.com/blog/functional-programming-paradigm-concepts" target="_blank">here</a> for example, or take a look at the <a class="link" href="https://en.wikipedia.org/wiki/Functional_programming" target="_blank">Wikipedia article on FP</a>. My motivation here is that I prefer data analysis <i>without changing the data</i>. Furthermore, if one is familiar with FP, and the language one is learning supports FP, the way of <i>calculating things</i> can be very easy to find. Especially when learning a high-level language with a lightweight syntax.</p>
+      <p>If you want to reproduce what's happening in this post, you can do it using the <a class="link" href="https://www.r-project.org/" target="_blank">R interpreter</a>. My current R version is 3.5.1 (2018-07-02) -- "Feather Spray". If you want to have answers about a function immediately, use the interpreter. Simply type '?' and the name of the function. As an example, you can do it like this for the <i>sum</i> function:</p>
+      <div class="block interpreter">
+        <p>&gt; ?sum</p>
+      </div>
+      <p>It opens the corresponding page for <i>sum</i> in your browser. As an alternative, you can take a look at the <a class="link" href="https://www.r-project.org/" target="_blank">R documentation.</a></p></p>
+      <p>So if you're ready, let's go!</p>
+      <p>Let's define a function first! In R, you can use the <span class="green">function</span> keyword to do that.</p>
+      <div class="block code">
+        <p><span class="blue">sq</span> <span class="magenta">&lt;-</span> <span class="green">function</span>(n) n ^ 2</p>
+      </div>
+      <p>The '<span class="magenta">&lt;-</span>' is an assignment operator in R. So I have created a function and I call it <span class="blue">sq</span>.</p>
+      <p>But what does it do? The R interpreter will tell us.</p>
+      <p>First, I create a vector of numbers in the range of 1 to 10.</p>
+      <div class="block interpreter">
+        <p>&gt; one.to.ten &lt;- 1:10; one.to.ten</p>
+        <p>[1]  1  2  3  4  5  6  7  8  9 10</p>
+      </div>
+      <p>Which I pass directly to  <span class="blue">sq</span>.</p>
+      <div class="block interpreter">
+        <p>&gt; sq(one.to.ten)</p>
+        <p>[1]   1   4   9  16  25  36  49  64  81 100</p>
+      </div>
+      <p>Wow! What happened here?</p>
+      <div class="block interpreter">
+      <p>&gt; ?'^'</p>
+      </div>
+      <p>The Description of Arithmetic Operators looks like this:</p>
+      <div class="block docs">
+        <p>These unary and binary operators perform arithmetic on numeric or complex <strong>vectors</strong> (or objects which can be coerced to them)</p>
+      </div>
+      <p>You can try the operator directly:</p>
+      <div class="block interpreter">
+        <p>&gt; one.to.ten ^ 2</p>
+        <p>[1]   1   4   9  16  25  36  49  64  81 100</p>
+      </div>
+      <p>You can even do</p>
+      <div class="block interpreter">
+        <p>&gt; one.to.ten ^ one.to.ten</p>
+        <p>[1]           1           4          27         256        3125       46656</p>
+        <p>[7]      823543    16777216   387420489 10000000000</p>
+      </div>
+      <p>Which is doing something like [1 ^ 1, 2 ^2 ... 10 ^ 10.]</p>
+      <p>This is a consequence of the functional and array language nature of R. It's like an undercover <a class="link" href="https://en.wikipedia.org/wiki/Map_(higher-order_function)" target="_blank">map</a> (<a class="link" href="https://hackernoon.com/map-filter-and-reduce-67d408e06107" target="_blank">about map, filter, and reduce</a>) function.</p>
+      <p>You can use other operators such as '&lt;' to <a class="link" href="https://en.wikipedia.org/wiki/Filter_(higher-order_function)" target="_blank">filter</a> your data using the square bracket notation.</p>
+      <div class="block interpreter">
+        <p>&gt; one.to.ten[one.to.ten &lt; 2]</p>
+        <p>[1] 1</p>
+      </div>
+      <p>As you can see, R supports <a class="link" href="https://en.wikipedia.org/wiki/Higher-order_function" target="_blank">higher-order functions</a> (HOFs). You can do mapping, filtering, <a class="link" href="https://en.wikipedia.org/wiki/Fold_(higher-order_function)" target="_blank">aggregation</a> (R has built-in functions <i>Map</i>, <i>Filter</i>, and <i>Reduce</i>), and even more.</p>
+      <p> Now, I'm going to define a sum of squares function. I have the building blocks, R's <i>sum</i>, and my very own <span class="blue">sq</span> so I don't have to do it from scratch. I just have to use <i>sum</i> and <span class="blue">sq</span> to build larger blocks via <a class="link" href="https://en.wikipedia.org/wiki/Function_composition_(computer_science)" target="_blank">function composition</a>.</p>
+      <p>I came across an R library called <a class="link" href="https://purrr.tidyverse.org/" target="_blank">purrr</a>, which - among other awesome FP tools - has a function called <i>compose</i> for this purpose. I'm going to use one of <strong>purrr</strong>'s features in this post, but first I'm going to show you how you can define your own compose function in R.</p>
+      <p>Based on the <a class="link" href="https://en.wikipedia.org/wiki/Function_composition_(computer_science)" target="_blank">definition</a>, you can do it like this:</p>
+      <div class="block code">
+        <p><span class="blue">my.compose</span> <span class="magenta">&lt;-</span> <span class="green">function</span>(f, g) <span class="green">function</span>(x) f(g(x))</p>
+      </div>
+      <p>I have defined a higher-order function <span class="blue">my.compose</span>. It takes two functions <i>f</i> and <i>g</i> as arguments, and returns a function, which applies <i>g</i> to a given argument, then applies <i>f</i> to the output of <i>g</i>.</p>
+      <p>I can define my sum of squares writing</p>
+      <div class="block code">
+        <p><span class="blue">sum.of.squares</span> <span class="magenta"><-</span> my.compose(sum, sq)</p>
+      </div>
+      <p>Let's say you have a vector of numbers. When you pass it to <span class="blue">sum.of.squares</span>, first the squares are calculated for all numbers in the vector, then aggregated by <i>sum</i>.</p>
+      <p>Let's check how it works for the test input!</p>
+      <div class="block interpreter">
+        <p>&gt; sum.of.squares(one.to.ten)</p>
+        <p>[1] 385</p>
+      </div>
+      <p>I can think of another example. Let's say I have some data with outliers.</p>
+      <div class="block interpreter">
+        <p>&gt; data.with.outliers &lt;- c(1, 4, 5, 4, 5, 4, 5, 9)</p>
+        <p></p>
+      </div>
+      <p>I'd like to calculate the mean and variance, but I want to filter the <a class="link" href="https://en.wikipedia.org/wiki/Outlier" target="_blank">outliers</a> first. There is a <a class="link" href="http://r-statistics.co/Outlier-Treatment-With-R.html" target="_blank">post</a>  on outlier handling by the way if you want to dig deeper. Here, I'm going to use a solution found on StackOverflow.</p>
+      <div class="block code">
+        <p><span class="blue">filter.outliers</span> <span class="magenta">&lt;-</span> <span class="green">function</span>(x) x[!x %in% boxplot.stats(x)$out]</p>
+      </div>
+      <p>It works like this:</p>
+      <div class="block interpreter">
+        <p>&gt; filter.outliers(data.with.outliers)</p>
+        <p>[1] 4 5 4 5 4 5</p>
+      </div>
+      <p>I can define equivalent functions of <i>mean</i> and <i>var</i>, with automatic outlier filtering.</p>
+      <div class="block code">
+        <p><span class="blue">mean.wo</span> <span class="magenta"><-</span> my.compose(mean, filter.outliers)</p>
+        <p><span class="blue">var.wo</span> <span class="magenta"><-</span> my.compose(var, filter.outliers)</p>
+      </div>
+      <p>The 'wo' in the name stands for without outliers.</p>
+      <p>You can check how it affects the mean and variance:</p>
+      <div class="block interpreter">
+        <p>&gt; mean(data.with.outliers)</p>
+        <p>[1] 4.625</p>
+        <p>&gt; mean.wo(data.with.outliers)</p>
+        <p>[1] 4.5</p>
+        <p>&gt; var(data.with.outliers)</p>
+        <p>[1] 4.839286</p>
+        <p>&gt; var.wo(data.with.outliers)</p>
+        <p>[1] 0.3</p>
+      </div>
+      <p>If you want to try your own outlier handling, you can do it by function composition.</p>
+      <p>There's another FP feature I'd like to show, namely <a class="link" href="https://en.wikipedia.org/wiki/Partial_application" target="_blank">partial application</a>. I'm going to need <strong>purrr</strong> for this.</p>
+      <div class="block interpreter">
+        <p>&gt; library(purrr)</p>
+      </div>
+      <p>I am going to tell <span class="blue">my.compose</span> to always apply <span class="blue">filter.outliers</span> as its <i>g</i> argument. It will behave like a "function factory". It is going to create functions that automatically filter outliers of a vector, and apply another function of choice to the vector.</p>
+      <div class="block code">
+         <p><span class="blue">filter.then</span> <span class="magenta">&lt;-</span> partial(my.compose, g=filter.outliers)</p>
+      </div>
+      <p>Now I can define my sum (and sum of squares) without outliers.</p>
+      <div class="block code">
+        <p><span class="blue">sum.wo</span> <span class="magenta">&lt;-</span> filter.then(sum)</p>
+        <p><span class="blue">sum.of.squares.wo</span> <span class="magenta">&lt;-</span> filter.then(sum.of.squares)</p>
+
+      </div>
+      <p>So let's try the above in the interpreter!</p>
+      <div class="block interpreter">
+        <p>&gt; sum(data.with.outliers)</p>
+        <p>[1] 37</p>
+        <p>&gt; sum.wo(data.with.outliers)</p>
+        <p>[1] 27</p>
+        <p>&gt; sum.of.squares(data.with.outliers)</p>
+        <p>[1] 205</p>
+        <p>&gt; sum.of.squares.wo(data.with.outliers)</p>
+        <p>[1] 123</p>
+      </div>
+      <p>The differences you see between the 'wo' and non-'wo' numbers mean that the automatic outlier filtering works! On top of that, the functions <span class="blue">sum.wo</span> and <span class="blue">sum.of.squares.wo</span> can be further composed if needed.</p>
+      <p></p>
+      <p>Doing this excercise made me experience the advantages of <i>FP in R.</i> Using R in a functional style can help me build powerful tools quite fast, and keep my code concise. Using my new tools, I can analyze data without changing the data.</p>
+      <p>R and functional programming are friends, so R and I are going to be friends. So hello R!</p>
+
+
+</article>
+</main>
+<footer class="std_global">
+</footer>
+</body>
+</html>
