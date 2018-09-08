@@ -2,7 +2,8 @@
 <html>
 <head>
   <title>Calculating Infinity</title>
-  <link href="https://fonts.googleapis.com/css?family=Kelly+Slab" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Kelly+Slab" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/css?family=Teko" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
@@ -64,7 +65,7 @@
         <p>[1] 1</p>
       </div>
       <p>As you can see, R supports <a class="link" href="https://en.wikipedia.org/wiki/Higher-order_function" target="_blank">higher-order functions</a> (HOFs). You can do mapping, filtering, <a class="link" href="https://en.wikipedia.org/wiki/Fold_(higher-order_function)" target="_blank">aggregation</a> (R has built-in functions <i>Map</i>, <i>Filter</i>, and <i>Reduce</i>), and even more.</p>
-      <p> Now, I'm going to define a sum of squares function. I have the building blocks, R's <i>sum</i>, and my very own <span class="blue">sq</span> so I don't have to do it from scratch. I just have to use <i>sum</i> and <span class="blue">sq</span> to build larger blocks via <a class="link" href="https://en.wikipedia.org/wiki/Function_composition_(computer_science)" target="_blank">function composition</a>.</p>
+      <p> Now, I'm going to define a sum of squares function (by which I mean &Sigma;<i>x</i><sup>2</sup> here). I have the building blocks, R's <i>sum</i>, and my very own <span class="blue">sq</span> so I don't have to do it from scratch. I just have to use <i>sum</i> and <span class="blue">sq</span> to build larger blocks via <a class="link" href="https://en.wikipedia.org/wiki/Function_composition_(computer_science)" target="_blank">function composition</a>.</p>
       <p>I came across an R library called <a class="link" href="https://purrr.tidyverse.org/" target="_blank">purrr</a>, which - among other awesome FP tools - has a function called <i>compose</i> for this purpose. I'm going to use one of <strong>purrr</strong>'s features in this post, but first I'm going to show you how you can define your own compose function in R.</p>
       <p>Based on the <a class="link" href="https://en.wikipedia.org/wiki/Function_composition_(computer_science)" target="_blank">definition</a>, you can do it like this:</p>
       <div class="block code">
