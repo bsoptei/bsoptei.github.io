@@ -1,9 +1,13 @@
 * {
-  font-family: 'Teko', sans-serif;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 .center {
   text-align: center;
+}
+
+img {
+  size = 100%;
 }
 
 main {
@@ -26,6 +30,12 @@ p {
   font-size: 28px;
 }
 
+.important_img {
+  height: 300px;
+
+  background: url('./b.jpg') center no-repeat;
+}
+
 .link {
   color: darkgreen;
   text-decoration: none;
@@ -38,6 +48,10 @@ span {
 
 .red {
   color: red;
+}
+
+.orange {
+  color: orange;
 }
 
 .green {
@@ -64,7 +78,7 @@ span {
   background: lightblue;
 }
 
-.interpreter {
+.console {
   background: black;
   color: white;
 }
