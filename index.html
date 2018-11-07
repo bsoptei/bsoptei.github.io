@@ -13,6 +13,188 @@
   </header>
   <main>
     <article>
+      <time datetime="2018-11-07">2018. 11. 7.</time>
+      <h3>A simple representation of units of measure in Rust</h3>
+      <p>Back in the 1990s, there was a space probe called the <a class="link" href="https://en.wikipedia.org/wiki/Mars_Climate_Orbiter">Mars Climate Orbiter</a>. The objective of its mission - in a nutshell - was to perform measurements related to the atmosphere and climate of the red planet. The misison failed, and one of the errors that led to the failure, <a class="link" href="https://www.jpl.nasa.gov/releases/99/mcoloss1.html">sounds quite unbelievable:</a></p>
+      <div class="block docs">
+          <p>"The peer review preliminary findings indicate that one team used English units (e.g., inches, feet and pounds) while the other used metric units for a key spacecraft operation."</p>
+      </div>
+      <p>Inspired by this notorious episode in the history of science and engineering, I started to think about how to create custom types to represent units of measure (which is one part of handling such challenges) in a statically typed programming language such as <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a>, an exciting language I’m currently learning.</p>
+      <p>If you want to reproduce what’s happening here, I recommend using a recent version of stable <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a> (I’m using version 1.30). I have a <a class="link" href="https://github.com/bsoptei/units_of_measure_experiment">repository on GitHub</a>, feel free to clone it and do some hacking!</p>
+      <p>The simplest solution is to define a struct with a single unnamed argument. Such as</p>
+      <div class="block code">
+        <p><span class="green">pub struct</span> <span class="blue">Celsius</span>(<span class="green">pub f64</span>);</p>
+      </div>
+      <p>It’s simple, it has information about the unit, it can be easily constructed</p>
+      <div class="block code">
+        <p><span class="green">let</span> <span class="blue">water_temperature</span> <span class="red">=</span> <span class="blue">Celsius</span>(42.0);</p>
+      </div>
+      <p>and the value can be easily extracted (using <strong>.0</strong> because <span class="blue">Celsius</span> is a <i>tuple struct</i>).</p>
+      <div class="block code">
+        <p><span class="green">let</span> <span class="blue">water_temperature_value</span> <span class="red">=</span> water_temperature.0;</p>
+      </div>
+      <p>Plus it can be used to define constants:</p>
+      <div class="block code">
+        <p><span class="green">pub const</span> <span class="blue">ABSOLUTE_ZERO_TEMPERATURE</span>: <span class="blue">Celsius</span> <span class="red">=</span> <span class="blue">Celsius</span>(-273.15);</p>
+      </div>
+      <p>But most importantly, making units of measure explicit makes developers (and the compiler) <strong>be aware</strong> of them.</p>
+      <p>Let’s improve the data structure a bit. Making it <i>generic</i> would allow you to use other types and save you from boilerplate. However, a constraint to use <i>numeric</i> types is required. For this purpose, you can use the <strong>Num</strong> trait from the <a class="link" href="https://crates.io/crates/num-traits">num-traits</a> crate.</p>
+      <div class="block code">
+        <p><span class="green">pub struct</span> <span class="blue">Celsius</span>&lt;Value: <strong>Num</strong>&gt;(<span class="green">pub</span> Value);</p>
+      </div>
+      <p>Now you can use custom numeric types, and choose the one that is best for your use case.</p>
+      <p>For further use, let’s rewrite the type of the constant defined above:</p>
+      <div class="block code">
+        <p><span class="green">pub const</span> <span class="blue">ABSOLUTE_ZERO_TEMPERATURE</span>: <span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt; <span class="red">=</span> <span class="blue">Celsius</span>(-273.15);</p>
+      </div>
+      <p>This simple format has another important feature: it’s inexpensive from the aspect of memory. If you use the <i>std</i>::<i>mem</i>::<span class="blue">size_of</span> function and print out the size of plain numeric types vs wrapped ones, you will get the following values:</p>
+      <table>
+          <thead>
+              <tr>
+                  <th>Type(s)</th>
+                  <th>Size (bytes)</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr>
+                  <td>u8, i8</td>
+                  <td>1</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;u8&gt;, Celsius&lt;i8&gt;</td>
+                  <td>1</td>
+              </tr>
+              <tr>
+                  <td>u16, i16</td>
+                  <td>2</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;u16&gt;, Celsius&lt;i16&gt;</td>
+                  <td>2</td>
+              </tr>
+              <tr>
+                  <td>u32, i32</td>
+                  <td>4</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;u32&gt;, Celsius&lt;i32&gt;</td>
+                  <td>4</td>
+              </tr>
+              <tr>
+                  <td>u64, i64</td>
+                  <td>8</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;u64&gt;, Celsius&lt;i64&gt;</td>
+                  <td>8</td>
+              </tr>
+              <tr>
+                  <td>u128, i128</td>
+                  <td>16</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;u128&gt;, Celsius&lt;i128&gt;</td>
+                  <td>16</td>
+              </tr>
+              <tr>
+                  <td>f32</td>
+                  <td>4</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;f32&gt;</td>
+                  <td>4</td>
+              </tr>
+              <tr>
+                  <td>f64</td>
+                  <td>8</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;f64&gt;</td>
+                  <td>8</td>
+              </tr>
+              <tr>
+                  <td>BigRational</td>
+                  <td>64</td>
+              </tr>
+              <tr>
+                  <td>Celsius&lt;BigRational&gt;</td>
+                  <td>64</td>
+              </tr>
+          </tbody>
+      </table>
+      <p>The table shows that wrapping numeric types in simple structs such as <span class="blue">Celsius</span> will not increase your memory usage.</p>
+      <p>Similarly to <span class="blue">Celsius</span>, you can define other units of temperature such as <span class="blue">Kelvin</span>, <span class="blue">Fahrenheit</span>:</p>
+      <div class="block code">
+        <p><span class="green">pub struct</span> <span class="blue">Kelvin</span>&lt;Value: <strong>Num</strong>&gt;(<span class="green">pub</span> Value);</p>
+        <p><span class="green">pub struct</span> <span class="blue">Fahrenheit</span>&lt;Value: <strong>Num</strong>&gt;(<span class="green">pub</span> Value);</p>
+      </div>
+      <p>and so on.</p>
+      <p>In contrast to primitives, these types cannot be cast to one another using the <span class="green">as</span> keyword. Instead, you can use Rust’s standard <strong>Into</strong> trait for safe conversion, which allows you to place the actual conversion formulas in the implementation. A side note: <a class="link" href="https://floating-point-gui.de/">be careful with the implementation if you are using floating point types.</a></p>
+      <div class="block code">
+        <p><span class="green">impl</span> <strong>Into</strong>&lt;<span class="blue">Fahrenheit</span>&lt;<span class="green">f64</span>&gt; <span class="green">for</span> <span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt; {</p>
+        <p>&emsp;<span class="green">fn</span> <span class="blue">into</span>(<span class="magenta">self</span>) <span class="red">-&gt;</span> <span class="blue">Fahrenheit</span>&lt;<span class="green">f64</span>&gt; {</p>
+        <p>&emsp;&emsp;<span class="blue">Fahrenheit</span>(((<span class="magenta">self</span>.0 <span class="red">*</span> 1.8 <span class="red">+</span> 32.0) <span class="red">*</span> <i>1e6</i>).<span class="blue">round</span>() <span class="red">/</span> <i>1e6</i>)</p>
+        <p>&emsp;}</p>
+        <p>}</p>
+      </div>
+      <p>Of course, one can make errors in the implementation, or do ad hoc conversions. The compiler won’t be able to stop one from doing that. That’s where code review and thorough testing come into the picture (which are another part of handling such challenges).</p>
+      <p>Speaking of testing, it is worth implementing the <strong>PartialEq</strong> trait for your types if you want to assert equality. <strong>PartialOrd</strong> is recommended if you want to compare your values. You can save a lot of writing by using the <span class="green">#[derive]</span> annotation.</p>
+      <div class="block code">
+        <p><span class="green">#[derive(PartialEq, PartialOrd, Debug)]</span></p>
+        <p><span class="green">pub struct</span> <span class="blue">Celsius</span>&lt;Value: <strong>Num</strong>&gt;(<span class="green">pub</span> Value);</p>
+      </div>
+      <p><strong>Debug</strong> is useful if you want to print your values (when your unit tests fail, for instance). Now you can do things such as</p>
+      <div class="block code">
+        <p><u>assert_eq!</u>(</p>
+        <p>&emsp;<span class="blue">Fahrenheit</span>(-459.67),</p>
+        <p>&emsp;ABSOLUTE_ZERO_TEMPERATURE.<span class="blue">into</span>()</p>
+        <p>);</p>
+      </div>
+      <p>and</p>
+      <div class="block code">
+        <p><u>assert!</u>(</p>
+        <p>&emsp;<span class="blue">Celsius</span>(2) &gt; <span class="blue">Celsius</span>(1)</p>
+        <p>);</p>
+      </div>
+      <p>You can do a lot more with <span class="green">derive</span>. With the release of Rust version 1.30, <strong>procedural macros</strong> have become part of stable Rust. One of the features of <strong>procedural macros</strong> is that you can define custom derives, which is really useful for automating implementation of simple traits. Take the <a class="link" href="https://crates.io/crates/derive_more">derive_more</a> crate for example: it has macros that automatically implement traits of <a class="link" href="https://doc.rust-lang.org/rust-by-example/trait/ops.html">operator overloading</a> for simple structs, such as the types defined here.</p>
+      <div class="block code">
+        <p><span class="green">#[derive(Add, Div, Mul, Sub, PartialEq, PartialOrd, Debug)]</span></p>
+        <p><span class="green">pub struct</span> <span class="blue">Celsius</span>&lt;Value: <strong>Num</strong>&gt;(<span class="green">pub</span> Value);</p>
+      </div>
+      <p>Now you can perform arithmetic on units of measure without unwrapping. You can add or subtract the same units of measure (attempting to add <span class="blue">Celsius</span> to <span class="blue">Fahrenheit</span> for example will result in a compilation error), and multiply or divide them with numbers of their <i>Value</i> type.</p>
+      <p>As a practical example for arithmetic, here’s a function that calculates the mean temperature based on a collection of values in Celsius:</p>
+      <div class="block code">
+        <p><span class="green">pub fn</span> <span class="blue">mean_temperature</span>(values: <strong>Vec</strong>&lt;<span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt;&gt;) <span class="red">-&gt;</span> <span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt; {</p>
+        <p>&emsp;<span class="green">let</span> <span class="blue">len</span> <span class="red">=</span> values.<span class="blue">len</span>();</p>
+        <p>&emsp;<span class="green">if</span> len <span class="red">==</span> 0 {</p>
+        <p>&emsp;&emsp;<span class="blue">Celsius</span>(0.0)</p>
+        <p>&emsp;} <span class="green">else</span> {</p>
+        <p>&emsp;&emsp;values.<span class="blue">into_iter</span>().<span class="blue">fold</span>(<span class="blue">Celsius</span>(0.0), |acc, temp| acc <span class="red">+</span> temp) <span class="red">/</span> (len <span class="green">as f64</span>)</p>
+        <p>&emsp;}</p>
+        <p>}</p>
+      </div>
+      <p>A quick check:</p>
+      <div class="block code">
+        <p><u>assert_eq!</u>(</p>
+        <p>&emsp;<span class="blue">Celsius</span>(11.5),</p>
+        <p>&emsp;<span class="blue">mean_temperature</span>(<u>vec!</u>[<span class="blue">Celsius</span>(11.3), <span class="blue">Celsius</span>(12.3), <span class="blue">Celsius</span>(10.9)])</p>
+        <p>);</p>
+      </div>
+      <p>If you want to make the <span class="blue">mean_temperature</span> function more readable, you can implement the Sum trait for Celsius (<a class="link" href="https://github.com/bsoptei/units_of_measure_experiment">see the full code on GitHub</a>). Or, to save some energy, you can create a derive macro that does the job for all units-of-measure-kind-of types.</p>
+      <p>Then you can write <span class="blue">mean_temperature</span> as</p>
+      <div class="block code">
+        <p><span class="green">pub fn</span> <span class="blue">mean_temperature</span>(values: <strong>Vec</strong>&lt;<span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt;&gt;) <span class="red">-&gt;</span> <span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt; {</p>
+        <p>&emsp;<span class="green">let</span> <span class="blue">len</span> <span class="red">=</span> values.<span class="blue">len</span>();</p>
+        <p>&emsp;<span class="green">if</span> len <span class="red">==</span> 0 { <span class="blue">Celsius</span>(0.0) } <span class="green">else</span> {</p>
+        <p>&emsp;&emsp;<span class="green">let</span> <span class="blue">sum</span>: <span class="blue">Celsius</span>&lt;<span class="green">f64</span>&gt; <span class="red">=</span> values.<span class="blue">into_iter</span>().<span class="blue">sum</span>();</p>
+        <p>&emsp;&emsp;sum <span class="red">/</span> (len <span class="green">as f64</span>)</p>
+        <p>&emsp;}</p>
+        <p>}</p>
+      </div>
+      <p>Wrapping it up, using Rust you can find a simple and flexible generic solution to represent units of measure, which allows you to add extra information to numeric types without memory overhead. Adding implementations of the <strong>From</strong>/<strong>Into</strong> trait provides safe conversion between the types. With the <span class="green">derive</span> annotation, you can automate trait implementations quite easily. Furthermore, <strong>procedural macros</strong> can save you a lot of work and add useful features to your data structures.</p>
+      <p>You should keep in mind that this is not the only solution to the problem. You might want to consider other options when you encounter such a challenge, and I encourage you to explore the opportunities provided by your language of choice. Since units of measure are - implicitly - part of everyday life (and therefore part of everyday engineering), I’m sure such challenges will come really soon.</p>
+    </article>
+    <article>
       <time datetime="2018-09-15">2018. 09. 15.</time>
       <h3>Function composition in Rust using a custom smart pointer</h3>
       <p>Still drunk with the power of <a class="link" href="http://bsoptei.github.io#functional_hello_r">function composition</a>, I started to play around with the technique in <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a>, a language I've been experimenting with. <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a> is a low-level language with a strict compiler that saves you from doing dangerous things. Furthermore, <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a> is a functional language. It has several concepts and features inspired by Haskell (<a class="link" href="https://science.raphael.poss.name/rust-for-functional-programmers.html">read more</a>) and Scala for example. The design of <a class="link" href="https://www.rust-lang.org/en-US/">Rust</a> makes it highly expressive and attractive.</p>
@@ -20,7 +202,7 @@
       <p>If you want to <a class="link" href="https://doc.rust-lang.org/book/2018-edition/ch19-05-advanced-functions-and-closures.html#returning-closures">return a function</a> in Rust, you can do it if you wrap it in a <a class="link" href="https://doc.rust-lang.org/book/2018-edition/ch15-01-box.html">Box</a>, for example. <strong>Box</strong> is a smart pointer in Rust, it allows you to store data on the heap. In order to have composable functions that allow a user friendly syntax, I have decided to define a custom type, a smart pointer called <strong>FBox</strong>.</p>
       <div class="block code">
         <p><span class="green">pub struct</span> <span class="blue">FBox</span>&lt;FIn, FOut&gt; {</p>
-        <p>&emsp;<span class="blue">f</span>: <strong>Box</strong>&lt;Fn(FIn) <span class="red">-></span> FOut&gt;</p>
+        <p>&emsp;<span class="blue">f</span>: <strong>Box</strong>&lt;Fn(FIn) <span class="red">-&gt;</span> FOut&gt;</p>
         <p>}</p>
       </div>
       <p><strong>FBox</strong> has a function <span class="blue">f</span>. The <i>generic</i> type parameters <strong>FIn</strong> and <strong>FOut</strong> represent the input and output type of <span class="blue">f</span>. The type signature of <span class="blue">f</span> shows tat <span class="blue">f</span> can be any kind of function that <strong>a)</strong> has one argument; and <strong>b)</strong> <a class="link" href="https://doc.rust-lang.org/book/second-edition/ch04-00-understanding-ownership.html">takes <i>ownership</i></a> of the argument. The handling of values is governed by the <i>ownership</i> rules of Rust, and <i>safety</i> is guaranteed by the compiler.</p>
