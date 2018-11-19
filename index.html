@@ -226,7 +226,7 @@
       </div>
       <p>The other method <span class="blue">compose</span> gives you f(g(x)):</p>
       <div class="block code">
-        <p><strong>FBox</strong>::<span class="blue">new</span>(<span class="green">move</span> |x| (self.f)(g(x)))
+        <p><strong>FBox</strong>::<span class="blue">new</span>(<span class="green">move</span> |x| (<span class="green">self</span>.f)(g(x)))
       </div>
       <p>I prefer <span class="blue">and_then</span> over  <span class="blue">compose</span> because to me it's easier to read and to reason about (it is called 'and then' for a reason).</p>
       <p>When using <span class="blue">and_then</span>, the input type of <i>g</i> must match the output type of <span class="blue">f</span>. If there is any mismatch, the compiler will throw an error. Which means the composition is <a class="link" href="https://en.wikipedia.org/wiki/Type_safety"><i>type safe</i></a>.</p>
